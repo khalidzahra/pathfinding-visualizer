@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinding Visualizer</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="options">
+        <div id="credentials">
+            <h3>Pathfinding Visualizer</h3>
+            <p>Khalid Zahra</p>
+        </div>
+        <input id="start-button" class="button" type="button" value="Start">
+        <input id="reset-button" class="button" type="button" value="Reset">
+        <div id="instructions">
+            <h3>Instructions</h3>
+            <ul id="instruction-list">
+                <li>Change start position: CTRL + Left-click</li>
+                <li>Change end position: SHIFT + Left-click</li>
+                <li>Add obstacle: Left-click</li>
+            </ul>
+            <div id="key">
+                <ul>
+                    <li><span id="green-key"></span><p>Start Point</p></li>
+                    <li><span id="red-key"></span><p>End Point</p></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="grid-container">
+        <table cellspacing="0"></table>
+    </div>
+    <script src="js/script.js"></script>
+</body>
+</html>
