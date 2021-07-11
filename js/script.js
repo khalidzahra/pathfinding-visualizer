@@ -37,7 +37,6 @@ function nodeClickHandler(e) {
         let col = e.target.cellIndex;
         if (nodes[row][col] == 2 || nodes[row][col] == 3)
             return;
-        console.log(e);
         if (e.ctrlKey) {
             removeClassFromCell(start_node[0], start_node[1], "start-node");
             nodes[start_node[0]][start_node[1]] = 0;
@@ -93,6 +92,7 @@ function canBeTraveresed(row, col) {
     return !(nodes[row][col] == 1 || nodes[row][col] == 4 || nodes[row][col] == 5);
 }
 
+// returns node's immediate neighbours
 function getNeighbours(row, col) {
     neighbours = [];
     if (row - 1 > -1 && canBeTraveresed(row - 1, col)) 
@@ -115,6 +115,7 @@ function addClassToCell(row, col, clazz) {
     document.querySelector(TABLE_QUERY).rows[row].cells[col].classList.add(clazz);
 }
 
+// marks node as visited
 function setVisited(row, col) {
     nodes[row][col] = 1;
     addClassToCell(row, col, "visited");
@@ -124,6 +125,7 @@ function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+// sets the parent and the cost of the specified node
 function setParentCost(path, node, _parent, _cost) {
     path[node] = {
         parent: _parent,
@@ -131,16 +133,17 @@ function setParentCost(path, node, _parent, _cost) {
     }
 }
 
+// finds the shortest path to the end node
 async function findEndNode(startRow, startCol) {
     if (isReset)
         isReset = false;
     let path = {};
-    let queue = [];
-    queue.push([startRow, startCol]);
     path[`${startRow},${startCol}`] = {
         parent: null,
         cost: 0
     };
+    let queue = [];
+    queue.push([startRow, startCol]);
     while (queue.length > 0) {
         await timeout(10);
         if (isReset)
@@ -149,32 +152,40 @@ async function findEndNode(startRow, startCol) {
         if (node[0] == end_node[0] && node[1] == end_node[1])
             break;
         setVisited(node[0], node[1]);
-        getNeighbours(node[0], node[1]).forEach(n => {
-            queue.push(n);
-            nodes[n[0]][n[1]] = 4;
-            addClassToCell(n[0], n[1], "queued");
-            let nodeKey = `${n[0]},${n[1]}`;
-            let parentKey = `${node[0]},${node[1]}`;
-            if (!path.hasOwnProperty(nodeKey) || path[parentKey].cost + 1 < path[nodeKey].cost) {
-                setParentCost(path, nodeKey, parentKey, path[parentKey].cost + 1);
-            }
-        });
+        handleNeighbours(node, queue, path);
+    }
+    if (!isReset) {
+        drawPath(path);
+    }
+}
+
+// adds neighbours to queue to be processed and calculates their costs
+function handleNeighbours(node, queue, path) {
+    getNeighbours(node[0], node[1]).forEach(n => {
+        queue.push(n);
+        nodes[n[0]][n[1]] = 4;
+        addClassToCell(n[0], n[1], "queued");
+        let nodeKey = `${n[0]},${n[1]}`;
+        let parentKey = `${node[0]},${node[1]}`;
+        if (!path.hasOwnProperty(nodeKey) || path[parentKey].cost + 1 < path[nodeKey].cost)
+            setParentCost(path, nodeKey, parentKey, path[parentKey].cost + 1);
+    });
+}
+
+// draws the final shortest path between the start and end nodes
+async function drawPath(path) {
+    let curr = `${end_node[0]},${end_node[1]}`;
+    let finalPath = [];
+    while (curr != null) {
+        let info  = curr.split(",");
+        finalPath.push([parseInt(info[0]), parseInt(info[1])]);
+        curr = path[curr].parent;
     }
 
-    if (!isReset) {
-        let curr = `${end_node[0]},${end_node[1]}`;
-        let finalPath = [];
-        while (curr != null) {
-            let info  = curr.split(",");
-            finalPath.push([parseInt(info[0]), parseInt(info[1])]);
-            curr = path[curr].parent;
-        }
-    
-        while (finalPath.length > 0) {
-            await timeout(5);
-            let node = finalPath.pop();
-            addClassToCell(node[0], node[1], "path");
-        }
+    while (finalPath.length > 0) {
+        await timeout(5);
+        let node = finalPath.pop();
+        addClassToCell(node[0], node[1], "path");
     }
 }
 
