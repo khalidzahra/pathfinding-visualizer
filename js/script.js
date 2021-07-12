@@ -31,7 +31,9 @@ function init() {
 
 // handles a node click event
 function nodeClickHandler(e) {
-    if (!e.target.classList.contains("blocked-node") && !isDragging) {
+    if (!e.target.classList.contains("blocked-node")) {
+        if (isDragging)
+            return;
         let row = e.target.parentNode.rowIndex;
         let col = e.target.cellIndex;
         if (nodes[row][col] !== 0)
@@ -44,11 +46,11 @@ function nodeClickHandler(e) {
             nodes[row][col] = 5;
             e.target.classList.add("blocked-node");
         }
-    }
+    } 
 }
 
 // adds required listeners to support draggable nodes
-function addDragListeners(node) {
+function addDragListeners() {
     // listeners for each cell
     document.querySelectorAll("td").forEach(cell => {
         // the beginning of dragging
@@ -62,10 +64,7 @@ function addDragListeners(node) {
         // when dragging over the cell
         cell.addEventListener("dragover", e => {
             e.preventDefault();
-            let data = e.dataTransfer.getData("boolean");
-            if (data) {
-                cell.classList.add("drag-over");
-            }
+            cell.classList.add("drag-over");
         });
         // when cursor leaves the cell while dragging
         cell.addEventListener("dragleave", e => removeClassFromCell(cell.parentNode.rowIndex, cell.cellIndex, "drag-over"));
@@ -108,11 +107,9 @@ function generateGrid(table) {
             if (nodes[i][j] == 2) {
                 cell.classList.add("start-node");
                 setCellDraggable(cell, true);
-                addDragListeners(cell);
             } else if (nodes[i][j] == 3) {
                 cell.classList.add("end-node");
                 setCellDraggable(cell, true);
-                addDragListeners(cell);
             }
             cell.addEventListener("click", e => nodeClickHandler(e))
             cell.addEventListener("mouseover", e => {
@@ -121,6 +118,7 @@ function generateGrid(table) {
             });
         }
     }
+    addDragListeners();
 }
 
 // reset the grid
