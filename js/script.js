@@ -232,6 +232,7 @@ async function findEndNode(startRow, startCol, finalPath) {
                 softReset();
                 findEndNode(targetNode[0], targetNode[1], finalPath);
             } else {
+                softReset();
                 drawPath(finalPath);
             }
             break;
