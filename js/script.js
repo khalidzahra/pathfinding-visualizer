@@ -9,28 +9,24 @@
     6 - location
 */
 
-const NUMBER_OF_NODES = 1000;
-const NODES_PER_ROW = 50;
-const NUMBER_OF_ROWS = NUMBER_OF_NODES / NODES_PER_ROW;
+const NUMBER_OF_NODES = 1000, NODES_PER_ROW = 50, NUMBER_OF_ROWS = NUMBER_OF_NODES / NODES_PER_ROW;
 const TABLE_QUERY = '#grid-container table';
-var end_node = [NUMBER_OF_ROWS - 2, NODES_PER_ROW - 2];
-var start_node = [1, 1];
-var pathLocations;
+var start_node, end_node, pathLocations;
 var isReset = false, isDragging = false, hasStarted = false;
 
-// initializing nodes array
+// declaring nodes array
 var nodes;
 
-// initializing array
+// initializing all variables
 function init() {
     nodes = Array.from({ length: NUMBER_OF_ROWS }, () => 
         Array.from({ length: NODES_PER_ROW }, () => 0)
     );
-    end_node = [NUMBER_OF_ROWS - 2, NODES_PER_ROW - 2];
-    start_node = [1, 1];
+    end_node = [9, 30];
+    start_node = [9, 13];
     pathLocations = [];
     nodes[start_node[0]][start_node[1]] = 2; // start node
-    nodes[NUMBER_OF_ROWS - 2][NODES_PER_ROW - 2] = 3; // end node
+    nodes[end_node[0]][end_node[1]] = 3; // end node
 }
 
 // handles a node click event
@@ -38,7 +34,7 @@ function nodeClickHandler(e) {
     if (!e.target.classList.contains("blocked-node") && !isDragging) {
         let row = e.target.parentNode.rowIndex;
         let col = e.target.cellIndex;
-        if (nodes[row][col] == 2 || nodes[row][col] == 3)
+        if (nodes[row][col] !== 0)
             return;
         if (e.shiftKey) {
             nodes[row][col] = 6;
@@ -136,7 +132,7 @@ function reset() {
     }
     init();
     addClassToCell(start_node[0], start_node[1], "start-node");
-    addClassToCell(NUMBER_OF_ROWS - 2, NODES_PER_ROW - 2, "end-node");
+    addClassToCell(end_node[0], end_node[1], "end-node");
 }
 
 function softReset() {

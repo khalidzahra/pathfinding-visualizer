@@ -10,11 +10,13 @@ html, body {
 .start-node { 
     background-image: url("../img/start.png");
     background-size: cover;
+    cursor: pointer;
 }
 
 .end-node { 
     background-image: url("../img/end.png");
     background-size: cover;
+    cursor: pointer;
 }
 
 .location-node {
