@@ -18,20 +18,20 @@
         <div id="instructions">
             <h3>Instructions</h3>
             <ul id="instruction-list">
-                <li>Change start position: CTRL + Left-click</li>
-                <li>Change end position: SHIFT + Left-click</li>
-                <li>Add obstacle: Left-click</li>
+                <li>Drag and drop to change the locations of the start and end</li>
+                <li>Left-click and hold to add obstacles</li>
+                <li>SHIFT + Left-click to add a path location</li>
             </ul>
             <div id="key">
                 <ul>
-                    <li><span id="green-key"></span><p>Start Point</p></li>
-                    <li><span id="red-key"></span><p>End Point</p></li>
+                    <li><span id="black-key"></span><p>Obstacle</p></li>
+                    <li><span id="location-key"></span><p>Path location</p></li>
                 </ul>
             </div>
         </div>
     </div>
     <div id="grid-container">
-        <table cellspacing="0"></table>
+        <table cellspacing="0" draggable="false"></table>
     </div>
     <script src="js/script.js"></script>
 </body>

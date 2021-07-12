@@ -6,6 +6,7 @@
     3 - end node
     4 - queued
     5 - blocked
+    6 - location
 */
 
 const NUMBER_OF_NODES = 1000;
@@ -14,7 +15,8 @@ const NUMBER_OF_ROWS = NUMBER_OF_NODES / NODES_PER_ROW;
 const TABLE_QUERY = '#grid-container table';
 var end_node = [NUMBER_OF_ROWS - 2, NODES_PER_ROW - 2];
 var start_node = [1, 1];
-var isReset = false;
+var pathLocations;
+var isReset = false, isDragging = false, hasStarted = false;
 
 // initializing nodes array
 var nodes;
@@ -26,29 +28,22 @@ function init() {
     );
     end_node = [NUMBER_OF_ROWS - 2, NODES_PER_ROW - 2];
     start_node = [1, 1];
+    pathLocations = [];
     nodes[start_node[0]][start_node[1]] = 2; // start node
     nodes[NUMBER_OF_ROWS - 2][NODES_PER_ROW - 2] = 3; // end node
 }
 
 // handles a node click event
 function nodeClickHandler(e) {
-    if (!e.target.classList.contains("blocked-node")) {
+    if (!e.target.classList.contains("blocked-node") && !isDragging) {
         let row = e.target.parentNode.rowIndex;
         let col = e.target.cellIndex;
         if (nodes[row][col] == 2 || nodes[row][col] == 3)
             return;
-        if (e.ctrlKey) {
-            removeClassFromCell(start_node[0], start_node[1], "start-node");
-            nodes[start_node[0]][start_node[1]] = 0;
-            nodes[row][col] = 2;
-            start_node = [row, col];
-            addClassToCell(row, col, "start-node");
-        } else if (e.shiftKey) {
-            removeClassFromCell(end_node[0], end_node[1], "end-node");
-            nodes[end_node[0]][end_node[1]] = 0;
-            nodes[row][col] = 3;
-            end_node = [row, col];
-            addClassToCell(row, col, "end-node");
+        if (e.shiftKey) {
+            nodes[row][col] = 6;
+            e.target.classList.add("location-node");
+            pathLocations.push([row, col]);
         } else {
             nodes[row][col] = 5;
             e.target.classList.add("blocked-node");
@@ -56,16 +51,72 @@ function nodeClickHandler(e) {
     }
 }
 
+// adds required listeners to support draggable nodes
+function addDragListeners(node) {
+    // listeners for each cell
+    document.querySelectorAll("td").forEach(cell => {
+        // the beginning of dragging
+        cell.addEventListener("dragstart", e => {
+            if (!hasStarted && cell.draggable) {
+                isDragging = true;
+                e.dataTransfer.setData("text/plain", cell.classList[0]);
+                e.dataTransfer.setData("boolean", true);
+            }
+        });
+        // when dragging over the cell
+        cell.addEventListener("dragover", e => {
+            e.preventDefault();
+            let data = e.dataTransfer.getData("boolean");
+            if (data) {
+                cell.classList.add("drag-over");
+            }
+        });
+        // when cursor leaves the cell while dragging
+        cell.addEventListener("dragleave", e => removeClassFromCell(cell.parentNode.rowIndex, cell.cellIndex, "drag-over"));
+        // when dropping the image into the cell
+        cell.addEventListener("drop", e => {
+            e.preventDefault();
+            let isNode = e.dataTransfer.getData("boolean");
+            let data = e.dataTransfer.getData("text/plain");
+            if (isNode && data != null && !e.target.classList.contains("blocked-node") && !hasStarted) {
+                if (data === "start-node") {
+                    removeClassFromCell(start_node[0], start_node[1], data);
+                    setCellDraggable(start_node[0], start_node[1], false);
+                    nodes[start_node[0]][start_node[1]] = 0;
+                    start_node = [cell.parentNode.rowIndex, cell.cellIndex];
+                    nodes[start_node[0]][start_node[1]] = 2;
+                } else {
+                    removeClassFromCell(end_node[0], end_node[1], data);
+                    setCellDraggable(end_node[0], end_node[1], false);
+                    nodes[end_node[0]][end_node[1]] = 0;
+                    end_node = [cell.parentNode.rowIndex, cell.cellIndex];
+                    nodes[end_node[0]][end_node[1]] = 3;
+                }
+                cell.classList.add(data);
+                setCellDraggable(cell, true);
+            }
+            removeClassFromCell(cell.parentNode.rowIndex, cell.cellIndex, "drag-over");
+            isDragging = false;
+        });
+    });
+
+}
+
 // grid generation
 function generateGrid(table) {
     for (let i = 0; i < NUMBER_OF_ROWS; i++) {
         let row = table.insertRow();
+        row.draggable = false;
         for (let j = 0; j < NODES_PER_ROW; j++) {
             let cell = row.insertCell();   
             if (nodes[i][j] == 2) {
                 cell.classList.add("start-node");
+                setCellDraggable(cell, true);
+                addDragListeners(cell);
             } else if (nodes[i][j] == 3) {
                 cell.classList.add("end-node");
+                setCellDraggable(cell, true);
+                addDragListeners(cell);
             }
             cell.addEventListener("click", e => nodeClickHandler(e))
             cell.addEventListener("mouseover", e => {
@@ -88,6 +139,17 @@ function reset() {
     addClassToCell(NUMBER_OF_ROWS - 2, NODES_PER_ROW - 2, "end-node");
 }
 
+function softReset() {
+    let cells = document.getElementById("grid-container").getElementsByTagName("td");
+    for (let cell of cells) {
+        if (cell.classList.contains("visited") || cell.classList.contains("queued")) {
+            removeClassFromCell(cell.parentNode.rowIndex, cell.cellIndex, "visited");
+            removeClassFromCell(cell.parentNode.rowIndex, cell.cellIndex, "queued");
+            nodes[cell.parentNode.rowIndex][cell.cellIndex] = 0;
+        }
+    }
+}
+
 function canBeTraveresed(row, col) {
     return !(nodes[row][col] == 1 || nodes[row][col] == 4 || nodes[row][col] == 5);
 }
@@ -106,6 +168,10 @@ function getNeighbours(row, col) {
     return neighbours;
 }
 
+function getCell(row, col) {
+    return document.querySelector(TABLE_QUERY).rows[row].cells[col];
+}
+
 function removeClassFromCell(row, col, clazz) {
     let cell = document.querySelector(TABLE_QUERY).rows[row].cells[col];
     cell.className = cell.className.replace(new RegExp('(?:^|\\s)'+ clazz + '(?:\\s|$)'), ' ');
@@ -113,6 +179,10 @@ function removeClassFromCell(row, col, clazz) {
 
 function addClassToCell(row, col, clazz) {
     document.querySelector(TABLE_QUERY).rows[row].cells[col].classList.add(clazz);
+}
+
+function setCellDraggable(cell, draggable) {
+    cell.draggable = draggable;
 }
 
 // marks node as visited
@@ -134,9 +204,10 @@ function setParentCost(path, node, _parent, _cost) {
 }
 
 // finds the shortest path to the end node
-async function findEndNode(startRow, startCol) {
+async function findEndNode(startRow, startCol, finalPath) {
     if (isReset)
         isReset = false;
+    hasStarted = true;
     let path = {};
     path[`${startRow},${startCol}`] = {
         parent: null,
@@ -144,19 +215,31 @@ async function findEndNode(startRow, startCol) {
     };
     let queue = [];
     queue.push([startRow, startCol]);
+    let targetNode;
+    if (pathLocations.length > 0) {
+        targetNode = pathLocations.shift();
+    } else {
+        targetNode = end_node;
+    }
     while (queue.length > 0) {
         await timeout(10);
         if (isReset)
             break;
         let node = queue.shift();
-        if (node[0] == end_node[0] && node[1] == end_node[1])
+        if (node[0] == targetNode[0] && node[1] == targetNode[1]) {
+            finalPath = finalPath.concat(getPathBetween(path, [startRow, startCol], targetNode));
+            if (targetNode != end_node) {
+                softReset();
+                findEndNode(targetNode[0], targetNode[1], finalPath);
+            } else {
+                drawPath(finalPath);
+            }
             break;
+        }
         setVisited(node[0], node[1]);
         handleNeighbours(node, queue, path);
     }
-    if (!isReset) {
-        drawPath(path);
-    }
+    hasStarted = false;
 }
 
 // adds neighbours to queue to be processed and calculates their costs
@@ -172,20 +255,24 @@ function handleNeighbours(node, queue, path) {
     });
 }
 
-// draws the final shortest path between the start and end nodes
-async function drawPath(path) {
-    let curr = `${end_node[0]},${end_node[1]}`;
+function getPathBetween(path, start, end) {
+    let curr = `${end[0]},${end[1]}`;
     let finalPath = [];
-    while (curr != null) {
+    while (curr != `${start[0]},${start[1]}`) {
         let info  = curr.split(",");
         finalPath.push([parseInt(info[0]), parseInt(info[1])]);
         curr = path[curr].parent;
     }
+    finalPath.push([start[0], start[1]]);
+    return finalPath.reverse();
+}
 
-    while (finalPath.length > 0) {
+// draws the final shortest path between the start and end nodes
+async function drawPath(path) {
+    while (path.length > 0) {
         await timeout(5);
-        let node = finalPath.pop();
-        addClassToCell(node[0], node[1], "path");
+        let currNode = path.shift();
+        addClassToCell(currNode[0], currNode[1], "path");
     }
 }
 
@@ -193,7 +280,12 @@ init();
 generateGrid(document.querySelector(TABLE_QUERY));
 
 document.querySelector("#start-button").addEventListener("click", () => {
-    findEndNode(start_node[0], start_node[1]);
+    pathLocations.sort(function(a,b) {
+        var firstDist = Math.pow((start_node[1] - a[1]), 2) + Math.pow((start_node[0] - a[0]), 2);
+        var secDist = Math.pow((start_node[1] - b[1]), 2) + Math.pow((start_node[0] - b[0]), 2);
+        return firstDist - secDist;
+    });
+    findEndNode(start_node[0], start_node[1], []);
 });
 
 document.querySelector("#reset-button").addEventListener("click", () => {

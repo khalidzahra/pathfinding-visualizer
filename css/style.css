@@ -8,11 +8,18 @@ html, body {
 }
 
 .start-node { 
-    background-color: green;
+    background-image: url("../img/start.png");
+    background-size: cover;
 }
 
 .end-node { 
-    background-color: red;
+    background-image: url("../img/end.png");
+    background-size: cover;
+}
+
+.location-node {
+    background-image: url("../img/location.png");
+    background-size: cover;
 }
 
 .blocked-node {
@@ -21,6 +28,14 @@ html, body {
 
 .queued {
     background-color: cadetblue;
+}
+
+.drag-over {
+    background-color: purple;
+    opacity: 50%;
+    -webkit-transition: opacity 200ms linear;
+    -ms-transition: opacity 200ms linear;
+    transition: opacity 200ms linear;
 }
 
 td.visited {
@@ -145,10 +160,11 @@ table tr td.path {
     height: 100%;
 }
 
-#key ul li #green-key {
-    background-color: green;
+#key ul li #black-key {
+    background-color: black;
 }
 
-#key ul li #red-key {
-    background-color: red;
+#key ul li #location-key {
+    background-image: url(../img/location.png);
+    background-size: contain;
 }
