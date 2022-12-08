@@ -196,7 +196,7 @@ function calculateCost(node, f) {
     if (f == "cost") {
         return node.cost;
     } else if (f == "heuristic") {
-        node.heuristic;
+        return node.heuristic;
     } else {
         return node.cost + node.heuristic;
     }
@@ -253,10 +253,10 @@ async function findEndNode(startRow, startCol, finalPath) {
     let path = {};
     path[`${startRow},${startCol}`] = {
         parent: null,
-        cost: 0,
+        cost: 1,
         heuristic: Math.sqrt(Math.pow(startRow - end_node[0], 2) + Math.pow(startCol - end_node[1], 2))
     };
-    let queue = new PriorityQueue("f");
+    let queue = new PriorityQueue(document.getElementById("algorithm-selector").value);
     queue.push({
         pos: [startRow, startCol],
         cost: path[`${startRow},${startCol}`].cost,
@@ -286,18 +286,18 @@ async function findEndNode(startRow, startCol, finalPath) {
             break;
         }
         setVisited(node[0], node[1]);
-        handleNeighbours(node, queue, path);
+        handleNeighbours(node, queue, path, targetNode);
     }
     hasStarted = false;
 }
 
 // adds neighbours to queue to be processed and calculates their costs
-function handleNeighbours(node, queue, path) {
+function handleNeighbours(node, queue, path, targetNode) {
     getNeighbours(node[0], node[1]).forEach(n => {
         queue.push({
             pos: [n[0], n[1]],
-            cost: 0,
-            heuristic: Math.sqrt(Math.pow(n[0] - end_node[0], 2) + Math.pow(n[1] - end_node[1], 2))
+            cost: 1,
+            heuristic: Math.sqrt(Math.pow(n[0] - targetNode[0], 2) + Math.pow(n[1] - targetNode[1], 2))
         });
         nodes[n[0]][n[1]] = 4;
         addClassToCell(n[0], n[1], "queued");

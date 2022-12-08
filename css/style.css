@@ -90,6 +90,30 @@ table tr td.path {
     transition: filter 200ms linear;
 }
 
+#algorithm-selection {
+    margin: 0 auto;
+}
+
+#algorithm-selection p {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#algorithm-selector {
+    border: solid #000 2px;
+    /* color: white; */
+    padding: 10px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 0 auto;
+    -webkit-transition: filter 200ms linear;
+    -ms-transition: filter 200ms linear;
+    transition: filter 200ms linear;
+}
+
 #start-button {
     background-color: #4CAF50;
 }

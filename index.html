@@ -15,6 +15,14 @@
         </div>
         <input id="start-button" class="button" type="button" value="Start">
         <input id="reset-button" class="button" type="button" value="Reset">
+        <div id="algorithm-selection">
+            <p>Algorithm Selection</p>
+            <select name="algorithm-selector" id="algorithm-selector">
+                <option value="cost">UCS (Dijkstra)</option>
+                <option value="heuristic">GBFS</option>
+                <option value="g+h">A*</option>
+            </select>
+        </div>
         <div id="instructions">
             <h3>Instructions</h3>
             <ul id="instruction-list">
