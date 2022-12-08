@@ -84,6 +84,7 @@ table tr td.path {
     font-size: 16px;
     cursor: pointer;
     margin: 0 auto;
+    margin-right: 30px;
     border-radius: 25px;
     -webkit-transition: filter 200ms linear;
     -ms-transition: filter 200ms linear;
@@ -101,7 +102,6 @@ table tr td.path {
 
 #algorithm-selector {
     border: solid #000 2px;
-    /* color: white; */
     padding: 10px 10px;
     text-align: center;
     text-decoration: none;
@@ -109,6 +109,7 @@ table tr td.path {
     font-size: 16px;
     cursor: pointer;
     margin: 0 auto;
+    margin-right: 30px;
     -webkit-transition: filter 200ms linear;
     -ms-transition: filter 200ms linear;
     transition: filter 200ms linear;
