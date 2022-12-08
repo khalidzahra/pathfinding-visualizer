@@ -191,6 +191,52 @@ function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+// selects cost function to use
+function calculateCost(node, f) {
+    if (f == "cost") {
+        return node.cost;
+    } else if (f == "heuristic") {
+        node.heuristic;
+    } else {
+        return node.cost + node.heuristic;
+    }
+}
+
+// priority queue implementation
+function PriorityQueue(prop) {
+    var arr = [];
+    this.push = function (el) {
+        if (this.isEmpty()) {
+            arr.push(el);
+        } else {
+            var added = false;
+            for (var i = 0; i < arr.length; i++) {
+                if (calculateCost(el, prop) < calculateCost(arr[i], prop)) {
+                    arr.splice(i, 0, el);
+                    added = true;
+                    break;
+                }
+            }
+            if (!added) {
+                arr.push(el);
+            }
+        }
+    };
+    this.pop = function () {
+        var value = arr.shift();
+        return value;
+    };
+    this.front = function () {
+        return arr[0];
+    };
+    this.length = function () {
+        return arr.length;
+    };
+    this.isEmpty = function () {
+        return arr.length === 0;
+    };
+}
+
 // sets the parent and the cost of the specified node
 function setParentCost(path, node, _parent, _cost) {
     path[node] = {
@@ -207,21 +253,27 @@ async function findEndNode(startRow, startCol, finalPath) {
     let path = {};
     path[`${startRow},${startCol}`] = {
         parent: null,
-        cost: 0
+        cost: 0,
+        heuristic: Math.sqrt(Math.pow(startRow - end_node[0], 2) + Math.pow(startCol - end_node[1], 2))
     };
-    let queue = [];
-    queue.push([startRow, startCol]);
+    let queue = new PriorityQueue("f");
+    queue.push({
+        pos: [startRow, startCol],
+        cost: path[`${startRow},${startCol}`].cost,
+        heuristic: path[`${startRow},${startCol}`].heuristic
+    });
     let targetNode;
     if (pathLocations.length > 0) {
         targetNode = pathLocations.shift();
     } else {
         targetNode = end_node;
     }
-    while (queue.length > 0) {
+    while (queue.length() > 0) {
         await timeout(10);
         if (isReset)
             break;
-        let node = queue.shift();
+        let node = queue.pop();
+        node = node.pos;
         if (node[0] == targetNode[0] && node[1] == targetNode[1]) {
             finalPath = finalPath.concat(getPathBetween(path, [startRow, startCol], targetNode));
             if (targetNode != end_node) {
@@ -242,7 +294,11 @@ async function findEndNode(startRow, startCol, finalPath) {
 // adds neighbours to queue to be processed and calculates their costs
 function handleNeighbours(node, queue, path) {
     getNeighbours(node[0], node[1]).forEach(n => {
-        queue.push(n);
+        queue.push({
+            pos: [n[0], n[1]],
+            cost: 0,
+            heuristic: Math.sqrt(Math.pow(n[0] - end_node[0], 2) + Math.pow(n[1] - end_node[1], 2))
+        });
         nodes[n[0]][n[1]] = 4;
         addClassToCell(n[0], n[1], "queued");
         let nodeKey = `${n[0]},${n[1]}`;
